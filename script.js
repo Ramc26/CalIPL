@@ -241,6 +241,14 @@ return null;
 }
 }
 
+function scrollTable() {
+    const tableWrapper = document.querySelector('.table-wrapper');
+    tableWrapper.scrollBy({
+        left: 200, // Adjust scroll distance
+        behavior: 'smooth'
+    });
+}
+
 // Update the addAllToCalendar function
 function addAllToCalendar(matches) {
     if (confirm(`This will open ${matches.length} new tabs. Continue?`)) {

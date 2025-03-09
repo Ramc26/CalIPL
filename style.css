@@ -184,3 +184,50 @@ th {
         /* margin-top: 0.25rem; */
     }
 }
+
+.swipe-indicator {
+    display: none; /* Hidden by default */
+    text-align: center;
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.5rem 0;
+}
+
+.swipe-indicator i {
+    margin-right: 0.5rem;
+    color: #3498db;
+}
+
+/* Show swipe indicator only on small screens */
+@media (max-width: 768px) {
+    .swipe-indicator {
+        display: block;
+    }
+}
+
+/* Button to scroll table */
+.scroll-button {
+    display: none; /* Hidden by default */
+    position: fixed;
+    bottom: 80px; /* Adjust based on footer height */
+    right: 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.scroll-button:hover {
+    background: #2980b9;
+}
+
+/* Show button only on small screens */
+@media (max-width: 768px) {
+    .scroll-button {
+        display: block;
+    }
+}
