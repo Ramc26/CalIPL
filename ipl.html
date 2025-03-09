@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CalIPL - Cricket Schedule Pro</title>
+    <meta property="og:title" content="CalIPL - Cricket Schedule Pro">
+    <meta property="og:description" content="Track your favorite IPL team's schedule and add matches to your calendar with ease!">
+    <meta property="og:image" content="./images/6604649.webp">
+    <meta property="og:url" content="https://yourwebsite.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="description" content="Track your favorite IPL team's schedule and add matches to your calendar with ease!">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">CalIPL</h1>
+        <img src="./images/6604649.webp" alt="IPL Schedule Banner">
+        <div class="search-container">
+            <input type="text" id="teamInput" placeholder="Enter team name or code (e.g., CSK)">
+            <button onclick="searchMatches()"><b>View Schedule 🏏</b></button>
+            <div class="shortcode-hint">Supported codes: CSK, RCB, MI, DC, KKR, SRH, PBKS, RR, GT, LSG</div>
+        </div>
+        <div id="results"></div>
+    </div>
+    <footer style="
+    text-align: center;
+    background: #2c3e50;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    border-top: 2px solid #3498db;
+    position: fixed ;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+">
+    <p style="margin: 0; font-size: 1rem;">
+        Made with ❤️ by <a href="https://twitter.com/itsmeramc" 
+        target="_blank" 
+        style="color: #1da1f2; text-decoration: none;">
+            <i class="fa fa-twitter" style="color: #74C0FC;"> </i><strong>itsmeramc</strong>
+        </a> | 
+        <span style="font-size: 0.9rem; font-style: italic;">
+            Follow me for more cool projects, tech updates, and maybe some bad jokes! 🚀
+        </span>
+    </p>
+</footer>
+
+    <script src="./script.js"></script>
+</body>
+</html>
