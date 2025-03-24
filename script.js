@@ -16,6 +16,7 @@ const shortToFull = Object.entries(teamAbbreviations).reduce((acc, [full, short]
     acc[short.toLowerCase()] = full;
     return acc;
 }, {});
+
 const title = document.querySelector('.title');
 const observer = new IntersectionObserver(
     ([entry]) => {
@@ -23,9 +24,19 @@ const observer = new IntersectionObserver(
     },
     { threshold: [0] }
 );
-
 observer.observe(title);
-// Match data
+
+// Helper: Convert match date format (DD-MM-YY) to display format
+function formatDate(dateString) {
+    const [d, m, y] = dateString.split('-');
+    return `${d}/${m}/20${y}`;
+}
+
+// Helper: Convert date input (YYYY-MM-DD) to match format (DD-MM-YY)
+function formatDateInput(dateStr) {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}-${month}-${year.slice(2)}`;
+}
 const matches = [
 { matchNo: 1, date: '22-03-25', day: 'Saturday', start: '7:30 PM', home: 'Kolkata Knight Riders', away: 'Royal Challengers Bengaluru', venue: 'Kolkata' },
 { matchNo: 2, date: '23-03-25', day: 'Sunday', start: '3:30 PM', home: 'Sunrisers Hyderabad', away: 'Rajasthan Royals', venue: 'Hyderabad' },
@@ -102,39 +113,42 @@ const matches = [
 { matchNo: 73, date: '23-05-25', day: 'Friday', start: '7:30 PM', home: '', away: 'Qualifier 2', venue: 'Kolkata' },
 { matchNo: 74, date: '25-05-25', day: 'Sunday', start: '7:30 PM', home: '', away: 'Final', venue: 'Kolkata' }
 ];
-
+// Modified searchMatches: If team input is entered, filter by team only; else filter by date.
 function searchMatches() {
-    const input = document.getElementById('teamInput').value.trim().toLowerCase();
-    if (!input) return;
+    const teamInputValue = document.getElementById('teamInput').value.trim().toLowerCase();
+    const dateInputValue = document.getElementById('dateInput').value.trim();
 
-    const teamName = shortToFull[input] || input;
-    const filteredMatches = matches.filter(match => 
-        [match.home, match.away].some(team => 
-            team.toLowerCase() === teamName.toLowerCase()
-        )
-    );
+    let filteredMatches = matches;
+
+    if (teamInputValue) {
+        const teamName = shortToFull[teamInputValue] || teamInputValue;
+        filteredMatches = filteredMatches.filter(match =>
+            [match.home, match.away].some(team =>
+                team.toLowerCase() === teamName.toLowerCase()
+            )
+        );
+    } else if (dateInputValue) {
+        const matchDate = formatDateInput(dateInputValue);
+        filteredMatches = filteredMatches.filter(match => match.date === matchDate);
+    }
 
     displayMatches(filteredMatches);
 }
-function formatDate(dateString) { // Renamed from formatDateDisplay
-    const [d, m, y] = dateString.split('-');
-    return `${d}/${m}/20${y}`;
-}
+
+// Display search results in a table (remains unchanged)
 function displayMatches(filteredMatches) {
     const resultsDiv = document.getElementById('results');
     resultsDiv.innerHTML = '';
 
     if (filteredMatches.length === 0) {
-        resultsDiv.innerHTML = '<p>No matches found for this team.</p>';
+        resultsDiv.innerHTML = '<p>No matches found for this team/date.</p>';
         return;
     }
 
-    // Create table
     const wrapper = document.createElement('div');
     wrapper.className = 'table-wrapper';
-    
+
     const table = document.createElement('table');
-    // Update the displayMatches table template to use correct function name
     table.innerHTML = `
         <thead>
             <tr>
@@ -142,7 +156,8 @@ function displayMatches(filteredMatches) {
                 <th>Date</th>
                 <th>Day</th>
                 <th>Time</th>
-                <th>Opponent</th>
+                <th>Home</th>
+                <th>Away</th>
                 <th>Venue</th>
                 <th>Add</th>
             </tr>
@@ -154,7 +169,8 @@ function displayMatches(filteredMatches) {
                     <td>${formatDate(match.date)}</td>
                     <td>${match.day}</td>
                     <td>${match.start}</td>
-                    <td>${getOpponent(match)}</td>
+                    <td>${match.home || 'TBD'}</td>
+                    <td>${match.away || 'TBD'}</td>
                     <td>${match.venue}</td>
                     <td>
                         <button onclick="addToCalendar('${generateCalendarUrl(match)}')">
@@ -165,17 +181,39 @@ function displayMatches(filteredMatches) {
             `).join('')}
         </tbody>
     `;
-
-    // // Add All button
-    // const addAllButton = document.createElement('button');
-    // addAllButton.className = 'add-all-btn';
-    // addAllButton.textContent = 'Add All Matches to Calendar';
-    // addAllButton.onclick = () => addAllToCalendar(filteredMatches);
-
     wrapper.appendChild(table);
     resultsDiv.appendChild(wrapper);
-    resultsDiv.appendChild(addAllButton);
 }
+function displayTodayMatches(todayMatches) {
+    const container = document.getElementById('todaySchedule');
+    if (todayMatches.length === 0) {
+        container.innerHTML = '<p>No matches scheduled for today.</p>';
+        return;
+    }
+    let html = `<h2 class="honk-today-heading">Today's Matches</h2>`;
+    html += `<div class="today-matches-container">`;
+    todayMatches.forEach(match => {
+        html += `
+          <div class="today-match-card">
+            <p><span class="vast-shadow-regular">Match No:</span> <span class="smokum-regular">#${match.matchNo}</span></p>
+            <p>
+              <span class="vast-shadow-regular">Match:</span> 
+              <span class="smokum-regular">${match.home}</span> 
+              <img class="vs-gif" src="./images/vs2.gif" alt="vs"> 
+              <span class="smokum-regular">${match.away}</span>
+            </p>
+            <p><span class="vast-shadow-regular">Venue:</span> <span class="smokum-regular">${match.venue}</span></p>
+            <p><span class="vast-shadow-regular">Time:</span> <span class="smokum-regular">${match.start}</span></p>
+          </div>
+        `;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+
+
+// Opens calendar URL in a new tab.
 function addToCalendar(url) {
     if (url && typeof url === 'string') {
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -183,80 +221,68 @@ function addToCalendar(url) {
         console.error('Invalid calendar URL');
     }
 }
-function getOpponent(match) {
-    const teamInput = document.getElementById('teamInput').value.trim().toLowerCase();
-    const teamName = shortToFull[teamInput] || teamInput;
-    
-    // Handle matches without home team (playoffs)
-    if (!match.home) {
-        return match.away;
-    }
-    
-    const isHomeTeam = match.home.toLowerCase() === teamName.toLowerCase();
-    const opponent = isHomeTeam ? match.away : match.home;
-    const abbreviation = teamAbbreviations[opponent] || '-';
-    
-    return `${opponent} (${abbreviation})`;
-}
 
-// Add error handling to generateCalendarUrl
+// Generate Google Calendar URL for the match event.
 function generateCalendarUrl(match) {
-try {
-// Parse date components
-const [day, month, year] = match.date.split('-');
-const fullYear = `20${year}`;
+    try {
+        const [day, month, year] = match.date.split('-');
+        const fullYear = `20${year}`;
 
-// Parse time components
-const [time, modifier] = match.start.split(' ');
-let [hours, minutes] = time.split(':');
-hours = parseInt(hours);
-if (modifier === 'PM' && hours !== 12) hours += 12;
-if (modifier === 'AM' && hours === 12) hours = 0;
+        const [time, modifier] = match.start.split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours);
+        if (modifier === 'PM' && hours !== 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
 
-// Create start and end times (3 hours duration)
-const start = `${fullYear}${month}${day}T${hours.toString().padStart(2, '0')}${minutes}00`;
-const endHours = (hours + 3).toString().padStart(2, '0');
-const end = `${fullYear}${month}${day}T${endHours}${minutes}00`;
+        const start = `${fullYear}${month}${day}T${hours.toString().padStart(2, '0')}${minutes}00`;
+        const endHours = (hours + 3).toString().padStart(2, '0');
+        const end = `${fullYear}${month}${day}T${endHours}${minutes}00`;
 
-// Create event parameters
-const eventName = `${match.home} vs ${match.away}`;
-const details = `Cricket Match between ${match.home} and ${match.away}`;
-const location = match.venue;
+        const eventName = `${match.home} vs ${match.away}`;
+        const details = `Cricket Match between ${match.home} and ${match.away}`;
+        const location = match.venue;
 
-// Build Google Calendar URL
-const url = new URL('https://www.google.com/calendar/render');
-url.searchParams.set('action', 'TEMPLATE');
-url.searchParams.set('text', eventName);
-url.searchParams.set('dates', `${start}/${end}`);
-url.searchParams.set('details', details);
-url.searchParams.set('location', location);
-url.searchParams.append('remind', '300-popup');
-url.searchParams.append('remind', '120-popup');
-url.searchParams.append('remind', '60-popup');
+        const url = new URL('https://www.google.com/calendar/render');
+        url.searchParams.set('action', 'TEMPLATE');
+        url.searchParams.set('text', eventName);
+        url.searchParams.set('dates', `${start}/${end}`);
+        url.searchParams.set('details', details);
+        url.searchParams.set('location', location);
+        url.searchParams.append('remind', '300-popup');
+        url.searchParams.append('remind', '120-popup');
+        url.searchParams.append('remind', '60-popup');
 
-return url.toString();
-} catch (error) {
-console.error('Error generating calendar URL:', error);
-return null;
-}
-}
-
-function scrollTable() {
-    const tableWrapper = document.querySelector('.table-wrapper');
-    tableWrapper.scrollBy({
-        left: 200, // Adjust scroll distance
-        behavior: 'smooth'
-    });
-}
-
-// Update the addAllToCalendar function
-function addAllToCalendar(matches) {
-    if (confirm(`This will open ${matches.length} new tabs. Continue?`)) {
-        matches.forEach((match, index) => {
-            setTimeout(() => {
-                const url = generateCalendarUrl(match);
-                window.open(url, '_blank', 'noopener,noreferrer');
-            }, index * 1000);
-        });
+        return url.toString();
+    } catch (error) {
+        console.error('Error generating calendar URL:', error);
+        return null;
     }
 }
+
+// Auto-load schedule when a date is selected (for search table).
+document.getElementById('dateInput').addEventListener('change', searchMatches);
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize Flatpickr with disableMobile option.
+    flatpickr("#dateInput", {
+        dateFormat: "Y-m-d",
+        defaultDate: new Date(),
+        disableMobile: true,
+        onChange: function(selectedDates, dateStr) {
+            searchMatches();
+        }
+    });
+
+    // Set today's date on the date input.
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = (today.getMonth() + 1).toString().padStart(2, '0');
+    const dd = today.getDate().toString().padStart(2, '0');
+    const formattedInputDate = `${yyyy}-${mm}-${dd}`;
+    document.getElementById('dateInput').value = formattedInputDate;
+    
+    // Get today's match date in DD-MM-YY format.
+    const matchDate = `${dd}-${mm}-${yyyy.toString().slice(2)}`;
+    const todayMatches = matches.filter(match => match.date === matchDate);
+    displayTodayMatches(todayMatches);
+});
